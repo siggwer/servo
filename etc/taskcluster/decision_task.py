@@ -68,7 +68,7 @@ def tasks(task_for):
             # https://github.com/servo/saltfs/blob/master/homu/map.jinja
 
             "try-mac": [macos_unit],
-            "try-linux": [linux_tidy_unit, linux_docs_check, linux_release],
+            "try-linux": [linux_tidy_unit],
             "try-windows": [windows_unit, windows_arm64, windows_uwp_x64],
             "try-magicleap": [magicleap_dev],
             "try-arm": [windows_arm64],
@@ -204,15 +204,8 @@ def linux_tidy_unit():
         .with_script("""
             ./mach test-tidy --no-progress --all
             python3 ./mach test-tidy --no-progress --all --no-wpt
-            python3 ./mach build --dev
-            python3 ./mach test-unit
-            python3 ./mach package --dev
-            python3 ./mach build --dev --features refcell_backtrace
-            python3 ./mach build --dev --features layout-2020
-            python3 ./mach build --dev --libsimpleservo
             python3 ./mach build --dev -p servo-gst-plugin
             python3 ./mach build --dev --media-stack=dummy
-            python3 ./mach test-tidy --no-progress --self-test
 
             ./etc/memory_reports_over_time.py --test
             ./etc/taskcluster/mock.py
