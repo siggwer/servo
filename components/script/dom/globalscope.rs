@@ -61,13 +61,12 @@ use dom_struct::dom_struct;
 use ipc_channel::ipc::{self, IpcSender};
 use ipc_channel::router::ROUTER;
 use js::glue::{IsWrapper, UnwrapObjectDynamic};
-use js::jsapi::JSContext;
-use js::jsapi::JSObject;
 use js::jsapi::{CurrentGlobalOrNull, GetNonCCWObjectGlobal};
 use js::jsapi::{HandleObject, Heap};
+use js::jsapi::{JSContext, JSObject, SourceText};
 use js::jsval::{JSVal, UndefinedValue};
 use js::panic::maybe_resume_unwind;
-use js::rust::wrappers::EvaluateUtf8;
+use js::rust::wrappers::Evaluate2;
 use js::rust::{get_object_class, CompileOptionsWrapper, ParentRuntime, Runtime};
 use js::rust::{HandleValue, MutableHandleValue};
 use js::{JSCLASS_IS_DOMJSCLASS, JSCLASS_IS_GLOBAL};
@@ -92,6 +91,7 @@ use std::cell::{Cell, RefCell};
 use std::collections::hash_map::Entry;
 use std::collections::{HashMap, VecDeque};
 use std::ffi::CString;
+use std::marker::PhantomData;
 use std::mem;
 use std::ops::Index;
 use std::rc::Rc;
@@ -1852,15 +1852,20 @@ impl GlobalScope {
                 let ar = enter_realm(&*self);
 
                 let _aes = AutoEntryScript::new(self);
-                let options = CompileOptionsWrapper::new(*cx, filename.as_ptr(), line_number);
+                let options =
+                    unsafe { CompileOptionsWrapper::new(*cx, filename.as_ptr(), line_number) };
 
                 debug!("evaluating Dom string");
                 let result = unsafe {
-                    EvaluateUtf8(
+                    Evaluate2(
                         *cx,
                         options.ptr,
-                        code.as_ptr() as *const _,
-                        code.len() as libc::size_t,
+                        &mut SourceText {
+                            units_: code.as_ptr() as *const _,
+                            length_: code.len() as u32,
+                            ownsUnits_: false,
+                            _phantom_0: PhantomData,
+                        },
                         rval,
                     )
                 };

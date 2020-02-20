@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #![feature(const_fn)]
+#![feature(const_transmute)]
 #![feature(core_intrinsics)]
 #![feature(drain_filter)]
 #![feature(inner_deref)]
